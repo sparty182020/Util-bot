@@ -5,7 +5,7 @@
 module.exports = (app) => {
     // Your code here
     app.log.info("Yay, the app was loaded!");
-
+    const cfunc = require('sparty182020-utils')
     app.on("issues.opened", async (context) => {
         // Labels
         const tag = context.payload.issue.title.match(/\[[A-z]{3,}\]/)?.[0]
@@ -30,6 +30,7 @@ module.exports = (app) => {
     });
     app.on('issue_comment.created',
         async (context) => {
+            let tbl;
             //commands
             const commenter = context.payload.comment.user.login;
             const comment = context.payload.comment.body;
@@ -53,47 +54,68 @@ module.exports = (app) => {
             Promise.resolve().then(_ => {
                 command.forEach((data) => {
                     if (data.startsWith('addl.')) {
-                        data = data.slice(5)
+                        data = "a" + data.slice(5)
+                    }
+                    if (data.startsWith('reml.')) {
+                        data = "r" + data.slice(5)
                     }
                     switch (data.toLowerCase()) {
-                        case 'bug':
+                        case 'abug':
                             context.octokit.issues.addLabels(context.issue({
                                 labels: ['bug']
                             }))
                             break
-                        case 'feature':
+                        case 'rbug':
+                            context.octokit.issues.removeLabel(context.issue({
+                                name: 'bug'
+                            }))
+                            break;
+                        case 'afeature':
                             context.octokit.issues.addLabels(context.issue({
                                 labels: ['enhancement']
                             }))
-                            break
+                            break;
+                        case 'rfeature':
+                            context.octokit.issues.removeLabel(context.issue({
+                                name: 'enhancement'
+                            }))
+                            break;
                         case 'close':
                             context.octokit.issues.update(context.issue({
                                 state: 'closed'
                             }))
                             break
                         case 'lock':
-                            context.octokit.issues.lock(context.issue({
-                                lock_reason: 'resolved'
-                            }))
+                            tbl = true
                             break
                         default:
                             break
                     }
                 })
             })
-            .then(_ => {
-                context.octokit.issues.deleteComment(
-                    {
-                        owner: context.payload.repository.owner.login,
-                        repo: context.payload.repository.name,
-                        comment_id: context.payload.comment.id
+                .then(_ => {
+                    context.octokit.issues.deleteComment(
+                        {
+                            owner: context.payload.repository.owner.login,
+                            repo: context.payload.repository.name,
+                            comment_id: context.payload.comment.id
+                        }
+                    )
+                })
+                .then(_ => {
+                    if (tbl) {
+                        context.octokit.issues.lock(context.issue(
+                            {
+                                lock_reason: "resolved"
+                            }
+                        ))
                     }
-                )
-            })
+                })
         }
     )
     app.on('issue_comment.edited',
         async (context) => {
+            let tbl;
             //commands
             const commenter = context.payload.comment.user.login;
             const comment = context.payload.comment.body;
@@ -117,43 +139,63 @@ module.exports = (app) => {
             Promise.resolve().then(_ => {
                 command.forEach((data) => {
                     if (data.startsWith('addl.')) {
-                        data = data.slice(5)
+                        data = "a" + data.slice(5)
+                    }
+                    if (data.startsWith('reml.')) {
+                        data = "r" + data.slice(5)
                     }
                     switch (data.toLowerCase()) {
-                        case 'bug':
+                        case 'abug':
                             context.octokit.issues.addLabels(context.issue({
                                 labels: ['bug']
                             }))
                             break
-                        case 'feature':
+                        case 'rbug':
+                            context.octokit.issues.removeLabel(context.issue({
+                                name: 'bug'
+                            }))
+                            break;
+                        case 'afeature':
                             context.octokit.issues.addLabels(context.issue({
                                 labels: ['enhancement']
                             }))
-                            break
+                            break;
+                        case 'rfeature':
+                            context.octokit.issues.removeLabel(context.issue({
+                                name: 'enhancement'
+                            }))
+                            break;
                         case 'close':
                             context.octokit.issues.update(context.issue({
                                 state: 'closed'
                             }))
                             break
                         case 'lock':
-                            context.octokit.issues.lock(context.issue({
-                                lock_reason: 'resolved'
-                            }))
+                            tbl = true
                             break
                         default:
                             break
                     }
                 })
             })
-            .then(_ => {
-                context.octokit.issues.deleteComment(
-                    {
-                        owner: context.payload.repository.owner.login,
-                        repo: context.payload.repository.name,
-                        comment_id: context.payload.comment.id
+                .then(_ => {
+                    context.octokit.issues.deleteComment(
+                        {
+                            owner: context.payload.repository.owner.login,
+                            repo: context.payload.repository.name,
+                            comment_id: context.payload.comment.id
+                        }
+                    )
+                })
+                .then(_ => {
+                    if (tbl) {
+                        context.octokit.issues.lock(context.issue(
+                            {
+                                lock_reason: "resolved"
+                            }
+                        ))
                     }
-                )
-            })
+                })
         }
     )
 
